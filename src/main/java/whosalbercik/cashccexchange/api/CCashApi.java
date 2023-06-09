@@ -1,10 +1,9 @@
-package ccash;
+package whosalbercik.cashccexchange.api;
 
-import variant.Variant;
-import java.util.UUID;
 import java.util.Optional;
 import kong.unirest.Unirest;
 import kong.unirest.HttpResponse;
+import whosalbercik.cashccexchange.object.Variant;
 
 public final class CCashApi {
     public static Optional<Long> getBalance(String name) {

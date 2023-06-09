@@ -7,7 +7,7 @@ group = 'whosalbercik'
 version = '1.19.2-0.1.0.0'
 
 java {
-    archivesBaseName = 'cashccexchange'
+    archivesBaseName = 'ccashexchange'
     toolchain.languageVersion = JavaLanguageVersion.of(17)
 }
 

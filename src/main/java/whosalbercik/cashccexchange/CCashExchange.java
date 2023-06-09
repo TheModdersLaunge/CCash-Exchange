@@ -4,15 +4,15 @@ import com.mojang.logging.LogUtils;
 import net.minecraftforge.fml.common.Mod;
 import org.slf4j.Logger;
 
-@Mod(CashccExchange.MODID)
-public class CashccExchange {
+@Mod(CCashExchange.MODID)
+public class CCashExchange {
 
     // Define mod id
-    public static final String MODID = "cashccexchange";
+    public static final String MODID = "ccashexchange";
     // reference a slf4j logger
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    public CashccExchange() {
+    public CCashExchange() {
         
     }
 }
