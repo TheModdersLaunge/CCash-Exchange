@@ -13,6 +13,5 @@ public class CCashExchange {
     private static final Logger LOGGER = LogUtils.getLogger();
 
     public CCashExchange() {
-        
     }
 }
