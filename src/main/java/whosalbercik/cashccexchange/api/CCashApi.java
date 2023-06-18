@@ -19,12 +19,12 @@ public final class CCashApi {
         return Unirest.get("v1/user/exists?name=" + name).header("Accept", "application/json").asEmpty().isSuccess();
     }
 
-    public static Variant<Long, String> sendFunds(String a_name, String password, String b_name, Long amount) {
+    public static Variant<Long, String> sendFunds(String a_name, String pass, String b_name, Long amount) {
         final HttpResponse<String> resp = Unirest.post("v1/user/transfer")
             .header("Accept", "application/json")
             .field("name", b_name)
             .field("amount", String.valueOf(amount))
-            .basicAuth(a_name, password)
+            .basicAuth(a_name, pass)
             .asString();
 
         String temp = resp.getBody();
@@ -35,7 +35,7 @@ public final class CCashApi {
     public static boolean addUser(String name, String pass) {
         final HttpResponse<String> resp = Unirest.post("v1/user/register")
             .header("Accept", "application/json")
-            .basicAuth(a_name, password)
+            .basicAuth(name, pass)
             .asEmpty();
         
         return resp.isSuccess();
