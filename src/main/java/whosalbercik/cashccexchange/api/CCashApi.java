@@ -11,8 +11,7 @@ public final class CCashApi {
             .header("Accept", "application/json")
             .asString();
     
-        String temp = resp.getBody();
-        if (resp.isSuccess()) { return Optional.of(Long.parseLong(temp)); }
+        if (resp.isSuccess()) { return Optional.of(Long.parseLong(resp.getBody())); }
         else { return Optional.empty(); }
     }
     
@@ -31,5 +30,14 @@ public final class CCashApi {
         String temp = resp.getBody();
         if (resp.isSuccess()) { return Variant.ofT1(Long.parseLong(temp)); }
         else { return Variant.ofT2(resp.getBody()); }
+    }
+
+    public static boolean addUser(String name, String pass) {
+        final HttpResponse<String> resp = Unirest.post("v1/user/register")
+            .header("Accept", "application/json")
+            .basicAuth(a_name, password)
+            .asEmpty();
+        
+        return resp.isSuccess();
     }
 }
