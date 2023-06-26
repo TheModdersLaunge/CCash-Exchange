@@ -1,4 +1,4 @@
-package whosalbercik.cashccexchange.object;
+package whosalbercik.ccashexchange.object;
 
 import java.util.Optional;
 
