@@ -45,6 +45,10 @@ public class CCashSavedData extends SavedData {
         return bidsa;
     }
 
+    public Bid getBid(int id) {
+        return bids.get(id);
+    }
+
     public CCashSavedData() {
     }
 

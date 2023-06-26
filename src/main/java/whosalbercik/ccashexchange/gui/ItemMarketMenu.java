@@ -1,6 +1,7 @@
 package whosalbercik.ccashexchange.gui;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.SimpleContainer;
@@ -31,6 +32,7 @@ public class ItemMarketMenu extends ChestMenu {
                 ItemStack icona = bid.getItemstack().copy();
                 icona.setHoverName(Component.literal("[BID] $" + bid.getPrice()).withStyle(ChatFormatting.UNDERLINE).withStyle(ChatFormatting.GREEN));
                 icona.getOrCreateTag().put("ccash.gui", StringTag.valueOf("true"));
+                icona.getTag().put("ccash.id", IntTag.valueOf(bid.getId()));
 
                 container.setItem(10 + (bids.indexOf(bid) == 7 ? 8 : bids.indexOf(bid)), icona);
             }

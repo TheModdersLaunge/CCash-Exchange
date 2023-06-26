@@ -3,6 +3,7 @@ package whosalbercik.ccashexchange.commands;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.LongArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandBuildContext;
@@ -23,7 +24,8 @@ public class PlaceBidCommand {
         stack.register(Commands.literal("bid")
                 .then(Commands.argument("price", LongArgumentType.longArg(0))
                         .then(Commands.argument("item", ItemArgument.item(ctx))
-                                .then(Commands.argument("count", IntegerArgumentType.integer(1)).executes(PlaceBidCommand::placeBid)))));
+                                .then(Commands.argument("count", IntegerArgumentType.integer(1))
+                                        .then(Commands.argument("password", StringArgumentType.word()).executes(PlaceBidCommand::placeBid))))));
     }
 
     private static int placeBid(CommandContext<CommandSourceStack> ctx){
@@ -38,17 +40,30 @@ public class PlaceBidCommand {
         String account = p.getPersistentData().getString("ccash.account");
         long price = ctx.getArgument("price", long.class);
 
+        if (price == 0)  {
+            ctx.getSource().sendFailure(Component.literal("Price cannot be 0!"));
+            return 0;
+
+        }
 
         if (account.equals("")) {
             ctx.getSource().sendFailure(Component.literal("Account not set up! Please use ").append("/config account").withStyle(ChatFormatting.AQUA).append("to register").withStyle(ChatFormatting.RED));
             return 0;
         }
 
+        if (!CCashApi.containsAccount(account)) {
+            ctx.getSource().sendFailure(Component.literal("Account can not be found on server!"));
+            ctx.getSource().sendFailure(Component.literal("Set up account again using ")
+                    .append("/config account").withStyle(ChatFormatting.AQUA)
+                    .append(" and try again").withStyle(ChatFormatting.RED));
+            return 0;
+        }
 
         if (!CCashApi.containsAccount(ServerConfig.MARKET_ACCOUNT.get())) CCashApi.addUser(ServerConfig.MARKET_ACCOUNT.get(), ServerConfig.MARKET_PASS.get());
 
         if (CCashApi.getBalance(account).get() < price) {
             ctx.getSource().sendFailure(Component.literal("You do not have enough money to place this bid"));
+            return 0;
         }
 
         CCashApi.sendFunds(account, ctx.getArgument("password", String.class), "market", price);

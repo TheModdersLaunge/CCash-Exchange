@@ -5,9 +5,15 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.nbt.IntTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.AirItem;
+import whosalbercik.ccashexchange.core.ModPacketHandler;
+import whosalbercik.ccashexchange.networking.BidAcceptC2SPacket;
 
 public class ItemMarketScreen extends AbstractContainerScreen<ItemMarketMenu> implements MenuAccess<ItemMarketMenu> {
 
@@ -39,5 +45,13 @@ public class ItemMarketScreen extends AbstractContainerScreen<ItemMarketMenu> im
         int j = (this.height - this.imageHeight) / 2;
         this.blit(p_98413_, i, j, 0, 0, this.imageWidth, this.containerRows * 18 + 17);
         this.blit(p_98413_, i, j + this.containerRows * 18 + 17, 0, 126, this.imageWidth, 96);
+    }
+
+
+    @Override
+    protected void slotClicked(Slot slot, int index, int partialTick, ClickType clickType) {
+        if (slot == null || slot.getItem().getItem() instanceof AirItem || !slot.getItem().getOrCreateTag().contains("ccash.gui")) return;
+
+        ModPacketHandler.sendToServer(new BidAcceptC2SPacket(((IntTag) slot.getItem().getTag().get("ccash.id")).getAsInt()));
     }
 }

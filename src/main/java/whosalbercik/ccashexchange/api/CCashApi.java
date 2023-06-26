@@ -26,9 +26,9 @@ public final class CCashApi extends Thread{
         try {
             java.net.http.HttpResponse<String> response = client.send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
 
-            if (response.statusCode() < 200 || response.statusCode() > 299) return Optional.empty();
+            if (response.statusCode() == 200) return Optional.of(Long.parseLong(response.body()));
 
-            return Optional.of(Long.parseLong(response.body()));
+            return Optional.empty();
 
         } catch (Exception e) {
             return Optional.empty();
@@ -53,12 +53,17 @@ public final class CCashApi extends Thread{
         }
     }
 
-    public static Variant<Long, String> sendFunds(String a_name, String pass, String b_name, Long amount) {
+    public static Variant<Long, String> sendFunds(String sender, String pass, String receiver, Long amount) {
+
+        String json = String.format("{\"name\":\"%s\", \"amount\":%s}", receiver, amount);
+
+
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(SERVER + "api/v1/user/transfer?name=" + b_name + "¶amount=" + String.valueOf(amount)))
+                .uri(URI.create(SERVER + "api/v1/user/transfer"))
                 .header("Accept", "application/json")
-                .header("Authorization", getBasicAuthenticationHeader(a_name, pass))
-                .POST(HttpRequest.BodyPublishers.noBody())
+                .header("Content-Type", "application/json")
+                .header("Authorization", getBasicAuthenticationHeader(sender, pass))
+                .POST(HttpRequest.BodyPublishers.ofString(json))
                 .build();
 
         try {
@@ -66,7 +71,7 @@ public final class CCashApi extends Thread{
 
             String temp = response.body();
 
-            if (response.statusCode() >= 200 && response.statusCode() < 300) {
+            if (response.statusCode() == 200) {
                 return Variant.ofT1(Long.parseLong(temp));
             }
             else {
@@ -80,17 +85,19 @@ public final class CCashApi extends Thread{
     }
 
     public static boolean addUser(String name, String pass) {
+
+        String json = String.format("{\"name\":\"%s\", \"pass\":\"%s\"}", name, pass);
+
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(SERVER + "api/v1/user/register"))
                 .header("Accept", "application/json")
-                .header("Authorization", getBasicAuthenticationHeader(name, pass))
-                .POST(HttpRequest.BodyPublishers.noBody())
+                .POST(HttpRequest.BodyPublishers.ofString(json))
                 .build();
 
         try {
             java.net.http.HttpResponse<String> response = client.send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
 
-            return response.statusCode() >= 200 && response.statusCode() < 300;
+            return response.statusCode() == 204;
 
         } catch (Exception e) {
             return false;

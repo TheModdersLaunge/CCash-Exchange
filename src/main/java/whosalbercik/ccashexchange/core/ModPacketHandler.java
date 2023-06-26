@@ -7,6 +7,7 @@ import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
 import whosalbercik.ccashexchange.CCashExchange;
+import whosalbercik.ccashexchange.networking.BidAcceptC2SPacket;
 import whosalbercik.ccashexchange.networking.OpenItemMarketC2SPacket;
 
 
@@ -34,6 +35,11 @@ public class ModPacketHandler {
                 .consumerMainThread(OpenItemMarketC2SPacket::handle)
                 .add();
 
+        net.messageBuilder(BidAcceptC2SPacket.class, id(), NetworkDirection.PLAY_TO_SERVER)
+                .decoder(BidAcceptC2SPacket::decode)
+                .encoder(BidAcceptC2SPacket::encode)
+                .consumerMainThread(BidAcceptC2SPacket::handle)
+                .add();
 
         INSTANCE = net;
     }

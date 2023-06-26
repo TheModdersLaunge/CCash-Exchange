@@ -5,9 +5,7 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import whosalbercik.ccashexchange.CCashExchange;
-import whosalbercik.ccashexchange.commands.ConfigCommand;
-import whosalbercik.ccashexchange.commands.OpenMarketCommand;
-import whosalbercik.ccashexchange.commands.PlaceBidCommand;
+import whosalbercik.ccashexchange.commands.*;
 
 
 @Mod.EventBusSubscriber(modid = CCashExchange.MODID)
@@ -24,6 +22,8 @@ public class ModForgeEvents {
         PlaceBidCommand.register(event.getDispatcher(), event.getBuildContext());
         OpenMarketCommand.register(event.getDispatcher());
         ConfigCommand.register(event.getDispatcher());
+        BalanceCommand.register(event.getDispatcher());
+        TransferCommand.register(event.getDispatcher());
     }
 
 }

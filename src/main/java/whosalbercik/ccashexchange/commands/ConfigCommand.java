@@ -3,17 +3,21 @@ package whosalbercik.ccashexchange.commands;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import whosalbercik.ccashexchange.api.CCashApi;
 
 public class ConfigCommand {
     public static void register(CommandDispatcher<CommandSourceStack> stack) {
         stack.register(Commands.literal("config")
                 .then(Commands.literal("account")
-                        .then(Commands.argument("name", StringArgumentType.word()).executes(ConfigCommand::account))));
+                        .then(Commands.argument("name", StringArgumentType.word())
+                                .then(Commands.argument("pass", StringArgumentType.word())
+                                        .executes(ConfigCommand::account)))));
 
 
     }
@@ -33,8 +37,9 @@ public class ConfigCommand {
 
         ServerPlayer p = stack.getSource().getPlayer();
         p.getPersistentData().put("ccash.account", StringTag.valueOf(stack.getArgument("name", String.class)));
+        CCashApi.addUser(stack.getArgument("name", String.class), stack.getArgument("pass", String.class));
 
-        stack.getSource().sendSuccess(Component.literal("Successfully updated Account info!"), false);
+        stack.getSource().sendSuccess(Component.literal("Successfully updated Account info!").withStyle(ChatFormatting.GREEN), false);
         return 0;
     }
 
