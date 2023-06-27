@@ -33,8 +33,14 @@ public class BidAcceptC2SPacket {
     public void handle(Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context ctx = supplier.get();
         ctx.enqueueWork(() -> {
-            Bid bid = CCashSavedData.get(ctx.getSender().level).getBid(bidId);
+            Bid bid = (Bid) CCashSavedData.get(ctx.getSender().level).getTransaction(bidId);
             ServerPlayer p = ctx.getSender();
+            Player author = bid.getCreator(ctx.getSender().level);
+
+            if (author == null) {
+                p.sendSystemMessage(Component.literal("Author is not online, please wait until player joins").withStyle(ChatFormatting.RED));
+                return;
+            }
 
             if (!p.getInventory().contains(bid.getItemstack())) {
                 p.sendSystemMessage(Component.literal("You do not have the required items!").withStyle(ChatFormatting.RED));
@@ -63,25 +69,26 @@ public class BidAcceptC2SPacket {
 
             if (!CCashApi.containsAccount(ServerConfig.MARKET_ACCOUNT.get())) CCashApi.addUser(ServerConfig.MARKET_ACCOUNT.get(), ServerConfig.MARKET_PASS.get());
 
-            // remove input
+
+
+            // remove items from player
             p.getInventory().clearOrCountMatchingItems((stack) -> stack.getItem().equals(bid.getItemstack().getItem()), bid.getItemstack().getCount(), p.getInventory());
 
-            // transaction
+            // give money to accepter
             CCashApi.sendFunds(ServerConfig.MARKET_ACCOUNT.get(), ServerConfig.MARKET_PASS.get(), account, bid.getPrice());
 
             p.closeContainer();
             p.sendSystemMessage(Component.literal("Successfully accepted Bid!").withStyle(ChatFormatting.GREEN));
 
             // give items to author
-            Player author = bid.getCreator(ctx.getSender().level);
             author.sendSystemMessage(Component.literal("Your bid for ").withStyle(ChatFormatting.GREEN)
                     .append(String.format("x%s %s", bid.getItemstack().getCount(), bid.getItemstack().getItem().getName(bid.getItemstack()).getString())).withStyle(ChatFormatting.AQUA)
                     .append(" Has been accepted!").withStyle(ChatFormatting.GREEN));
 
 
-            p.getInventory().add(new ItemStack(bid.getItemstack().getItem(), bid.getItemstack().getCount()));
+            author.getInventory().add(new ItemStack(bid.getItemstack().getItem(), bid.getItemstack().getCount()));
 
-            CCashSavedData.get(ctx.getSender().level).removeBid(bid);
+            CCashSavedData.get(ctx.getSender().level).removeTransaction(bid);
 
         });
 

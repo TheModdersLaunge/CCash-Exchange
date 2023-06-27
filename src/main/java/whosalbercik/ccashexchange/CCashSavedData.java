@@ -10,14 +10,16 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.storage.DimensionDataStorage;
 import net.minecraftforge.registries.ForgeRegistries;
+import whosalbercik.ccashexchange.object.Ask;
 import whosalbercik.ccashexchange.object.Bid;
+import whosalbercik.ccashexchange.object.Transaction;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class CCashSavedData extends SavedData {
 
-    private final HashMap<Integer, Bid> bids = new HashMap<Integer, Bid>();
+    private final HashMap<Integer, Transaction> transactions = new HashMap<Integer, Transaction>();
 
 
     public static CCashSavedData get(Level level) {
@@ -28,25 +30,25 @@ public class CCashSavedData extends SavedData {
         return storage.computeIfAbsent(CCashSavedData::new, CCashSavedData::new, "ccash");
     }
 
-    public void saveBid(Bid bid) {
-        bids.put(bid.getId(), bid);
+    public void saveTransaction(Transaction transaction) {
+        transactions.put(transaction.getId(), transaction);
         this.setDirty();
     }
 
-    public void removeBid(Bid bid) {
-        bids.remove(bid.getId());
+    public void removeTransaction(Transaction transaction) {
+        transactions.remove(transaction.getId());
         this.setDirty();
     }
 
-    public ArrayList<Bid> getBids() {
-        ArrayList<Bid> bidsa = new ArrayList<>();
-        bids.forEach((id, bid) -> bidsa.add(bid));
+    public ArrayList<Transaction> getTransactions() {
+        ArrayList<Transaction> transactionsa = new ArrayList<>();
+        transactions.forEach((id, transaction) -> transactionsa.add(transaction));
 
-        return bidsa;
+        return transactionsa;
     }
 
-    public Bid getBid(int id) {
-        return bids.get(id);
+    public Transaction getTransaction(int id) {
+        return transactions.get(id);
     }
 
     public CCashSavedData() {
@@ -55,16 +57,26 @@ public class CCashSavedData extends SavedData {
 
     // adds to list
     public CCashSavedData(CompoundTag tag) {
-        ListTag list = tag.getList("ccash.bids", Tag.TAG_COMPOUND);
+        ListTag list = tag.getList("ccash.transactions", Tag.TAG_COMPOUND);
         for (Tag t : list) {
-            CompoundTag bidTag = (CompoundTag) t;
+            CompoundTag transactionTag = (CompoundTag) t;
 
-            Bid bid = new Bid(bidTag.getUUID("ccash.creator"),
-                    new ItemStack(ForgeRegistries.ITEMS.getValue(new ResourceLocation(bidTag.getString("ccash.item"))), bidTag.getInt("ccash.count")),
-                    bidTag.getLong("ccash.price"),
-                    bidTag.getInt("ccash.id"));
+            Transaction action;
 
-            bids.put(bid.getId(), bid);
+            if (transactionTag.getString("ccash.type").equals("bid")) {
+                action = new Bid(transactionTag.getUUID("ccash.creator"),
+                        new ItemStack(ForgeRegistries.ITEMS.getValue(new ResourceLocation(transactionTag.getString("ccash.item"))), transactionTag.getInt("ccash.count")),
+                        transactionTag.getLong("ccash.price"),
+                        transactionTag.getInt("ccash.id"));
+            }
+            else {
+                action = new Ask(transactionTag.getUUID("ccash.creator"),
+                        new ItemStack(ForgeRegistries.ITEMS.getValue(new ResourceLocation(transactionTag.getString("ccash.item"))), transactionTag.getInt("ccash.count")),
+                        transactionTag.getLong("ccash.price"),
+                        transactionTag.getInt("ccash.id"));
+            }
+
+            transactions.put(action.getId(), action);
         }
     }
 
@@ -73,17 +85,18 @@ public class CCashSavedData extends SavedData {
     @Override
     public CompoundTag save(CompoundTag tag) {
         ListTag list = new ListTag();
-        bids.forEach((id, bid) -> {
-            CompoundTag bidTag = new CompoundTag();
-            bidTag.putUUID("ccash.creator", bid.getCreator());
-            bidTag.putString("ccash.item", ForgeRegistries.ITEMS.getResourceKey(bid.getItemstack().getItem()).get().location().toString());
-            bidTag.putLong("ccash.price", bid.getPrice());
-            bidTag.putInt("ccash.count", bid.getItemstack().getCount());
-            bidTag.putInt("ccash.id", bid.getId());
+        transactions.forEach((id, transaction) -> {
+            CompoundTag transactionTag = new CompoundTag();
+            transactionTag.putUUID("ccash.creator", transaction.getCreator());
+            transactionTag.putString("ccash.item", ForgeRegistries.ITEMS.getResourceKey(transaction.getItemstack().getItem()).get().location().toString());
+            transactionTag.putLong("ccash.price", transaction.getPrice());
+            transactionTag.putInt("ccash.count", transaction.getItemstack().getCount());
+            transactionTag.putInt("ccash.id", transaction.getId());
+            transactionTag.putString("ccash.type", transaction instanceof Bid ? "bid" : "ask");
 
-            list.add(bidTag);
+            list.add(transactionTag);
         });
-        tag.put("ccash.bids", list);
+        tag.put("ccash.transactions", list);
         return tag;
     }
 

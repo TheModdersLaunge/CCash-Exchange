@@ -10,9 +10,10 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import whosalbercik.ccashexchange.core.ModMenus;
-import whosalbercik.ccashexchange.object.Bid;
+import whosalbercik.ccashexchange.object.Transaction;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class MarketMenu extends ChestMenu {
 
@@ -21,25 +22,28 @@ public class MarketMenu extends ChestMenu {
     }
 
 
-    public void putBids(ArrayList<Bid> bids) {
+    public void putTransactions(ArrayList<Transaction> transactions) {
         SimpleContainer container = (SimpleContainer) this.getContainer();
         decor();
 
-        ArrayList<Item> icons = new ArrayList<>();
+        HashMap<Transaction,Item> icons = new HashMap<>();
 
 
-        for (Bid bid: bids) {
-            if (!icons.contains(bid.getItemstack().getItem())) {
-                icons.add(bid.getItemstack().getItem());
+        for (Transaction transaction: transactions) {
+            if (!icons.containsValue(transaction.getItemstack().getItem())) {
+                icons.put(transaction, transaction.getItemstack().getItem());
             }
         }
 
-        for (Item icon: icons) {
-            ItemStack icona = new ItemStack(icon);
+        ArrayList<Item> iconArray = new ArrayList<>(icons.values());
+
+        for (Transaction transaction: icons.keySet()) {
+            ItemStack icona = new ItemStack(icons.get(transaction));
+
             icona.setHoverName(Component.literal("Click to view Bids and Asks").withStyle(ChatFormatting.UNDERLINE).withStyle(ChatFormatting.AQUA));
             icona.getOrCreateTag().put("ccash.gui", StringTag.valueOf("true"));
 
-            container.setItem(10 + (icons.indexOf(icon) == 7 ? 8 : icons.indexOf(icon)), icona);
+            container.setItem(10 + (iconArray.indexOf(icons.get(transaction)) == 7 ? 8 : iconArray.indexOf(icons.get(transaction))), icona);
         }
 
     }

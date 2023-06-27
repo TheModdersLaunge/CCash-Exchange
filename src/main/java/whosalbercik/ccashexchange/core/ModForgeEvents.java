@@ -24,6 +24,7 @@ public class ModForgeEvents {
         ConfigCommand.register(event.getDispatcher());
         BalanceCommand.register(event.getDispatcher());
         TransferCommand.register(event.getDispatcher());
+        PlaceAskCommand.register(event.getDispatcher(), event.getBuildContext());
     }
 
 }

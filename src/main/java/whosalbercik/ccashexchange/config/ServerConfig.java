@@ -16,7 +16,7 @@ public class ServerConfig {
 
         BUILDER.comment("Data used by the mod to access the market account");
 
-        SERVER_ADDRESS = BUILDER.define("server_address", "localhost");
+        SERVER_ADDRESS = BUILDER.define("server_address", "http://127.0.0.1:80/");
 
         MARKET_ACCOUNT = BUILDER.define("market_account", "market");
         MARKET_PASS = BUILDER.define("market_password", "password");

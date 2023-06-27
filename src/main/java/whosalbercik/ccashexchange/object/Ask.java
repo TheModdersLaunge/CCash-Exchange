@@ -9,20 +9,19 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.UUID;
 
-public class Bid extends Transaction{
+public class Ask extends Transaction{
 
-    public Bid(UUID creator, ItemStack stack, long price) {
+    public Ask(UUID creator, ItemStack stack, long price) {
         super(creator, stack, price);
 
         itemstack.getOrCreateTag().put("ccash.id", IntTag.valueOf(id));
         itemstack.getOrCreateTag().put("ccash.creator", StringTag.valueOf(creator.toString()));
         itemstack.getOrCreateTag().put("ccash.price", LongTag.valueOf(price));
-        itemstack.getOrCreateTag().put("ccash.type", StringTag.valueOf("bid"));
-
-        itemstack.setHoverName(Component.literal("[BID] $" + String.valueOf(price)).withStyle(ChatFormatting.BLUE));
+        itemstack.getOrCreateTag().put("ccash.type", StringTag.valueOf("ask"));
+        itemstack.setHoverName(Component.literal("[ASK] $" + String.valueOf(price)).withStyle(ChatFormatting.BLUE));
     }
 
-    public Bid(UUID creator,ItemStack stack, long price, int id) {
+    public Ask(UUID creator,ItemStack stack, long price, int id) {
         super(id, creator, stack, price);
 
         itemstack.getOrCreateTag().put("ccash.id", IntTag.valueOf(id));

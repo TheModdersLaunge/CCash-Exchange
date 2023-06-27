@@ -17,18 +17,18 @@ import net.minecraft.world.item.ItemStack;
 import whosalbercik.ccashexchange.CCashSavedData;
 import whosalbercik.ccashexchange.api.CCashApi;
 import whosalbercik.ccashexchange.config.ServerConfig;
-import whosalbercik.ccashexchange.object.Bid;
+import whosalbercik.ccashexchange.object.Ask;
 
-public class PlaceBidCommand {
+public class PlaceAskCommand {
     public static void register(CommandDispatcher<CommandSourceStack> stack, CommandBuildContext ctx) {
-        stack.register(Commands.literal("bid")
+        stack.register(Commands.literal("ask")
                 .then(Commands.argument("price", LongArgumentType.longArg(0))
                         .then(Commands.argument("item", ItemArgument.item(ctx))
                                 .then(Commands.argument("count", IntegerArgumentType.integer(1))
-                                        .then(Commands.argument("password", StringArgumentType.word()).executes(PlaceBidCommand::placeBid))))));
+                                        .then(Commands.argument("password", StringArgumentType.word()).executes(PlaceAskCommand::placeAsk))))));
     }
 
-    private static int placeBid(CommandContext<CommandSourceStack> ctx){
+    private static int placeAsk(CommandContext<CommandSourceStack> ctx){
         ServerPlayer p = ctx.getSource().getPlayer();
 
         if (p == null) {
@@ -61,19 +61,19 @@ public class PlaceBidCommand {
 
         if (!CCashApi.containsAccount(ServerConfig.MARKET_ACCOUNT.get())) CCashApi.addUser(ServerConfig.MARKET_ACCOUNT.get(), ServerConfig.MARKET_PASS.get());
 
-        if (CCashApi.getBalance(account).get() < price) {
-            ctx.getSource().sendFailure(Component.literal("You do not have enough money to place this bid"));
+        if (!p.getInventory().contains(stack)) {
+            ctx.getSource().sendFailure(Component.literal("You do not have the required items!"));
             return 0;
         }
 
-        CCashApi.sendFunds(account, ctx.getArgument("password", String.class), "market", price);
+        // remove items
+        p.getInventory().clearOrCountMatchingItems((invStack) -> stack.getItem().equals(stack.getItem()), stack.getCount(), p.getInventory());
 
-        Bid bid = new Bid(p.getUUID(), stack, price);
+        Ask ask = new Ask(p.getUUID(), stack, price);
         CCashSavedData saved = CCashSavedData.get(p.getServer().overworld());
-        saved.saveTransaction(bid);
+        saved.saveTransaction(ask);
 
-        ctx.getSource().sendSuccess(Component.literal("Successfully set bid x" + String.valueOf(stack.getCount()) + " " + stack.getItem().getName(stack).getString() + " for " + String.valueOf(price) + "$").withStyle(ChatFormatting.AQUA), false);
-
+        ctx.getSource().sendSuccess(Component.literal("Successfully set ask x" + String.valueOf(stack.getCount()) + " " + stack.getItem().getName(stack).getString() + " for " + String.valueOf(price) + "$").withStyle(ChatFormatting.AQUA), false);
 
         return 0;
     }

@@ -37,7 +37,7 @@ public class OpenItemMarketC2SPacket {
 
             ItemMarketMenu menu = new ItemMarketMenu(2, p.getInventory());
 
-            menu.addBids(CCashSavedData.get(p.getServer().overworld()).getBids(), item);
+            menu.addTransactions(CCashSavedData.get(p.getServer().overworld()).getTransactions(), item);
 
             MenuConstructor constructor = (par1, par2, par3) -> menu;
 
