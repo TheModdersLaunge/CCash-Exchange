@@ -4,8 +4,8 @@
 
 
 group = 'whosalbercik'
-version = '1.19.2-0.1.0.0'
-
+version = '1.19.2-0.1.1.0'
+// MCVERSION-MAJORMOD.MAJORAPI.MINOR.PATCH
 java {
     archivesBaseName = 'ccashexchange'
     toolchain.languageVersion = JavaLanguageVersion.of(17)

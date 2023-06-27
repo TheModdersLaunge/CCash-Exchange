@@ -1,6 +1,7 @@
 package whosalbercik.ccashexchange.networking;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -10,6 +11,7 @@ import net.minecraftforge.network.NetworkEvent;
 import whosalbercik.ccashexchange.CCashSavedData;
 import whosalbercik.ccashexchange.api.CCashApi;
 import whosalbercik.ccashexchange.object.Ask;
+import whosalbercik.ccashexchange.utils.Utils;
 
 import java.util.function.Supplier;
 
@@ -87,9 +89,16 @@ public class AskAcceptCs2Packet {
                 return;
             }
 
-
             // give items to player
-            p.getInventory().add(new ItemStack(ask.getItemstack().getItem(), ask.getItemstack().getCount()));
+            if (p.getInventory().getSlotWithRemainingSpace(ask.getItemstack()) == -1) {
+                p.drop(new ItemStack(ask.getItemstack().getItem(), ask.getItemstack().getCount()), false);
+                return;
+            }
+            else {
+                p.getInventory().add(new ItemStack(ask.getItemstack().getItem(), ask.getItemstack().getCount()));
+            }
+
+
 
             p.closeContainer();
             p.sendSystemMessage(Component.literal("Successfully accepted Ask!").withStyle(ChatFormatting.GREEN));
@@ -103,6 +112,11 @@ public class AskAcceptCs2Packet {
 
 
             CCashSavedData.get(ctx.getSender().level).removeTransaction(ask);
+
+            ListTag tag = author.getPersistentData().getList("ccash.transactions", 10);
+            tag.remove(Utils.getTransactionNBT(ask));
+            p.getPersistentData().put("ccash.transactions", tag);
+
 
         });
 

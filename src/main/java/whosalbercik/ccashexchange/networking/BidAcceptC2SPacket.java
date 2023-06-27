@@ -1,6 +1,7 @@
 package whosalbercik.ccashexchange.networking;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -11,6 +12,8 @@ import whosalbercik.ccashexchange.CCashSavedData;
 import whosalbercik.ccashexchange.api.CCashApi;
 import whosalbercik.ccashexchange.config.ServerConfig;
 import whosalbercik.ccashexchange.object.Bid;
+import whosalbercik.ccashexchange.utils.Utils;
+
 import java.util.function.Supplier;
 
 public class BidAcceptC2SPacket {
@@ -86,7 +89,19 @@ public class BidAcceptC2SPacket {
                     .append(" Has been accepted!").withStyle(ChatFormatting.GREEN));
 
 
-            author.getInventory().add(new ItemStack(bid.getItemstack().getItem(), bid.getItemstack().getCount()));
+            // give items to author
+            if (author.getInventory().getSlotWithRemainingSpace(bid.getItemstack()) == -1) {
+                p.drop(new ItemStack(bid.getItemstack().getItem(), bid.getItemstack().getCount()), false);
+                return;
+            }
+            else {
+                p.getInventory().add(new ItemStack(bid.getItemstack().getItem(), bid.getItemstack().getCount()));
+            }
+
+
+            ListTag tag = author.getPersistentData().getList("ccash.transactions", 10);
+            tag.remove(Utils.getTransactionNBT(bid));
+            p.getPersistentData().put("ccash.transactions", tag);
 
             CCashSavedData.get(ctx.getSender().level).removeTransaction(bid);
 

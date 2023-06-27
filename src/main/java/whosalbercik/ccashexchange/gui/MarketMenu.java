@@ -52,19 +52,11 @@ public class MarketMenu extends ChestMenu {
         SimpleContainer container = (SimpleContainer) this.getContainer();
         // decor
         container.setItem(0, new ItemStack(Items.PINK_STAINED_GLASS_PANE));
-        container.setItem(1, new ItemStack(Items.RED_STAINED_GLASS_PANE));
-        container.setItem(7, new ItemStack(Items.RED_STAINED_GLASS_PANE));
         container.setItem(8, new ItemStack(Items.PINK_STAINED_GLASS_PANE));
 
-        container.setItem(9, new ItemStack(Items.RED_STAINED_GLASS_PANE));
-        container.setItem(17, new ItemStack(Items.RED_STAINED_GLASS_PANE));
 
-        container.setItem(36, new ItemStack(Items.RED_STAINED_GLASS_PANE));
-        container.setItem(44, new ItemStack(Items.RED_STAINED_GLASS_PANE));
 
         container.setItem(45, new ItemStack(Items.PINK_STAINED_GLASS_PANE));
-        container.setItem(46, new ItemStack(Items.RED_STAINED_GLASS_PANE));
-        container.setItem(52, new ItemStack(Items.RED_STAINED_GLASS_PANE));
         container.setItem(53, new ItemStack(Items.PINK_STAINED_GLASS_PANE));
     }
 }

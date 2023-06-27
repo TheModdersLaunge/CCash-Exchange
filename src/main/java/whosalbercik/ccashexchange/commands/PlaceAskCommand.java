@@ -11,6 +11,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.item.ItemArgument;
 import net.minecraft.commands.arguments.item.ItemInput;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
@@ -18,6 +19,7 @@ import whosalbercik.ccashexchange.CCashSavedData;
 import whosalbercik.ccashexchange.api.CCashApi;
 import whosalbercik.ccashexchange.config.ServerConfig;
 import whosalbercik.ccashexchange.object.Ask;
+import whosalbercik.ccashexchange.utils.Utils;
 
 public class PlaceAskCommand {
     public static void register(CommandDispatcher<CommandSourceStack> stack, CommandBuildContext ctx) {
@@ -66,12 +68,34 @@ public class PlaceAskCommand {
             return 0;
         }
 
+        if (ctx.getArgument("count", int.class) > stack.getMaxStackSize()) {
+            ctx.getSource().sendFailure(Component.literal("Count of item is above max stack size!"));
+            return 0;
+        }
+
+        // list of active transactions
+        ListTag playerTransactions = p.getPersistentData().getList("ccash.transactions", 10);
+
+        // check for max transactions
+        if (ServerConfig.TRANSACTIONS_PER_PLAYER.get() != -1) {
+            int max = ServerConfig.TRANSACTIONS_PER_PLAYER.get();
+
+            if (playerTransactions.size() > max) {
+                ctx.getSource().sendFailure(Component.literal("Max transactions for player has been reached!"));
+                return 0;
+            }
+        }
+
+
         // remove items
         p.getInventory().clearOrCountMatchingItems((invStack) -> stack.getItem().equals(stack.getItem()), stack.getCount(), p.getInventory());
 
         Ask ask = new Ask(p.getUUID(), stack, price);
         CCashSavedData saved = CCashSavedData.get(p.getServer().overworld());
         saved.saveTransaction(ask);
+
+        playerTransactions.add(Utils.getTransactionNBT(ask));
+        p.getPersistentData().put("ccash.transactions", playerTransactions);
 
         ctx.getSource().sendSuccess(Component.literal("Successfully set ask x" + String.valueOf(stack.getCount()) + " " + stack.getItem().getName(stack).getString() + " for " + String.valueOf(price) + "$").withStyle(ChatFormatting.AQUA), false);
 

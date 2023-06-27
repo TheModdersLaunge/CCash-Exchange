@@ -11,6 +11,9 @@ public class ServerConfig {
     public static final ForgeConfigSpec.ConfigValue<String> MARKET_PASS;
     public static final ForgeConfigSpec.ConfigValue<String> MARKET_ACCOUNT;
 
+    public static final ForgeConfigSpec.ConfigValue<Integer> TRANSACTIONS_PER_PLAYER;
+
+
 
     static {
 
@@ -20,6 +23,8 @@ public class ServerConfig {
 
         MARKET_ACCOUNT = BUILDER.define("market_account", "market");
         MARKET_PASS = BUILDER.define("market_password", "password");
+
+        TRANSACTIONS_PER_PLAYER = BUILDER.comment("-1 = UNLIMITED, maximum active transactions for a player").define("max_transactions", 5);
 
         SPEC = BUILDER.build();
     }

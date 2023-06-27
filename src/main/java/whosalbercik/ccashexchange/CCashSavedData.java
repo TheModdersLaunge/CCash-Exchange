@@ -13,6 +13,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import whosalbercik.ccashexchange.object.Ask;
 import whosalbercik.ccashexchange.object.Bid;
 import whosalbercik.ccashexchange.object.Transaction;
+import whosalbercik.ccashexchange.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -86,15 +87,7 @@ public class CCashSavedData extends SavedData {
     public CompoundTag save(CompoundTag tag) {
         ListTag list = new ListTag();
         transactions.forEach((id, transaction) -> {
-            CompoundTag transactionTag = new CompoundTag();
-            transactionTag.putUUID("ccash.creator", transaction.getCreator());
-            transactionTag.putString("ccash.item", ForgeRegistries.ITEMS.getResourceKey(transaction.getItemstack().getItem()).get().location().toString());
-            transactionTag.putLong("ccash.price", transaction.getPrice());
-            transactionTag.putInt("ccash.count", transaction.getItemstack().getCount());
-            transactionTag.putInt("ccash.id", transaction.getId());
-            transactionTag.putString("ccash.type", transaction instanceof Bid ? "bid" : "ask");
-
-            list.add(transactionTag);
+            list.add(Utils.getTransactionNBT(transaction));
         });
         tag.put("ccash.transactions", list);
         return tag;

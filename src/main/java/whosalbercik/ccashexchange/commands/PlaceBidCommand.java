@@ -11,6 +11,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.item.ItemArgument;
 import net.minecraft.commands.arguments.item.ItemInput;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
@@ -18,6 +19,7 @@ import whosalbercik.ccashexchange.CCashSavedData;
 import whosalbercik.ccashexchange.api.CCashApi;
 import whosalbercik.ccashexchange.config.ServerConfig;
 import whosalbercik.ccashexchange.object.Bid;
+import whosalbercik.ccashexchange.utils.Utils;
 
 public class PlaceBidCommand {
     public static void register(CommandDispatcher<CommandSourceStack> stack, CommandBuildContext ctx) {
@@ -46,6 +48,11 @@ public class PlaceBidCommand {
 
         }
 
+        if (ctx.getArgument("count", int.class) > stack.getMaxStackSize()) {
+            ctx.getSource().sendFailure(Component.literal("Count of item is above max stack size!"));
+            return 0;
+        }
+
         if (account.equals("")) {
             ctx.getSource().sendFailure(Component.literal("Account not set up! Please use ").append("/config account").withStyle(ChatFormatting.AQUA).append("to register").withStyle(ChatFormatting.RED));
             return 0;
@@ -66,11 +73,30 @@ public class PlaceBidCommand {
             return 0;
         }
 
+        ListTag playerTransactions = p.getPersistentData().getList("ccash.transactions", 10);
+
+        // check for max transactions
+        if (ServerConfig.TRANSACTIONS_PER_PLAYER.get() != -1) {
+            int max = ServerConfig.TRANSACTIONS_PER_PLAYER.get();
+
+            if (playerTransactions.size() > max) {
+                ctx.getSource().sendFailure(Component.literal("Max transactions for player has been reached!"));
+                return 0;
+            }
+        }
+
+
         CCashApi.sendFunds(account, ctx.getArgument("password", String.class), "market", price);
+
+
+
 
         Bid bid = new Bid(p.getUUID(), stack, price);
         CCashSavedData saved = CCashSavedData.get(p.getServer().overworld());
         saved.saveTransaction(bid);
+
+        playerTransactions.add(Utils.getTransactionNBT(bid));
+        p.getPersistentData().put("ccash.transactions", playerTransactions);
 
         ctx.getSource().sendSuccess(Component.literal("Successfully set bid x" + String.valueOf(stack.getCount()) + " " + stack.getItem().getName(stack).getString() + " for " + String.valueOf(price) + "$").withStyle(ChatFormatting.AQUA), false);
 

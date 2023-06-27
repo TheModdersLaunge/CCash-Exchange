@@ -25,6 +25,8 @@ public class ModForgeEvents {
         BalanceCommand.register(event.getDispatcher());
         TransferCommand.register(event.getDispatcher());
         PlaceAskCommand.register(event.getDispatcher(), event.getBuildContext());
+        MyOffersCommand.register(event.getDispatcher());
+        RemoveTransactionCommand.register(event.getDispatcher());
     }
 
 }
