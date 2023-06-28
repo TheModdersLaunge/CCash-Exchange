@@ -68,11 +68,6 @@ public class PlaceAskCommand {
             return 0;
         }
 
-        if (ctx.getArgument("count", int.class) > stack.getMaxStackSize()) {
-            ctx.getSource().sendFailure(Component.literal("Count of item is above max stack size!"));
-            return 0;
-        }
-
         // list of active transactions
         ListTag playerTransactions = p.getPersistentData().getList("ccash.transactions", 10);
 

@@ -52,7 +52,7 @@ public class MarketScreen extends AbstractContainerScreen<MarketMenu> implements
 
         ItemStack stack = slot.getItem();
 
-        ModPacketHandler.sendToServer(new OpenItemMarketC2SPacket(stack.getItem()));
+        ModPacketHandler.sendToServer(new OpenItemMarketC2SPacket(stack.getItem(), 1));
 
     }
 }

@@ -60,6 +60,8 @@ public class BidAcceptC2SPacket {
                 return;
             }
 
+
+
             if (!CCashApi.containsAccount(account)) {
                 p.sendSystemMessage(Component.literal("Account not found on server!").withStyle(ChatFormatting.RED));
                 p.sendSystemMessage(Component.literal("Set up account again using ").withStyle(ChatFormatting.RED)
@@ -90,7 +92,7 @@ public class BidAcceptC2SPacket {
 
 
             // give items to author
-            if (author.getInventory().getSlotWithRemainingSpace(bid.getItemstack()) == -1) {
+            if (p.getInventory().getFreeSlot() == -1 && author.getInventory().getSlotWithRemainingSpace(bid.getItemstack()) == -1) {
                 p.drop(new ItemStack(bid.getItemstack().getItem(), bid.getItemstack().getCount()), false);
                 return;
             }

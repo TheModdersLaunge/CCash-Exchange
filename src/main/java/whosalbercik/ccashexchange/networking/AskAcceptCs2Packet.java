@@ -90,9 +90,8 @@ public class AskAcceptCs2Packet {
             }
 
             // give items to player
-            if (p.getInventory().getSlotWithRemainingSpace(ask.getItemstack()) == -1) {
+            if (p.getInventory().getFreeSlot() == -1 && p.getInventory().getSlotWithRemainingSpace(ask.getItemstack()) == -1) {
                 p.drop(new ItemStack(ask.getItemstack().getItem(), ask.getItemstack().getCount()), false);
-                return;
             }
             else {
                 p.getInventory().add(new ItemStack(ask.getItemstack().getItem(), ask.getItemstack().getCount()));

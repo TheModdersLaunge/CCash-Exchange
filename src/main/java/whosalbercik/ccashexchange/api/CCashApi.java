@@ -9,7 +9,7 @@ import java.util.Optional;
 import whosalbercik.ccashexchange.config.ServerConfig;
 import whosalbercik.ccashexchange.object.Variant;
 
-public final class CCashApi extends Thread{
+public final class CCashApi{
 
     public static final String SERVER = ServerConfig.SERVER_ADDRESS.get();
     private static final HttpClient client = HttpClient.newHttpClient();

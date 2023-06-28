@@ -14,6 +14,7 @@ import whosalbercik.ccashexchange.object.Transaction;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class MarketMenu extends ChestMenu {
 
@@ -22,14 +23,15 @@ public class MarketMenu extends ChestMenu {
     }
 
 
-    public void putTransactions(ArrayList<Transaction> transactions) {
+    public boolean putTransactions(ArrayList<Transaction> allTransactions, int page) {
         SimpleContainer container = (SimpleContainer) this.getContainer();
         decor();
 
         HashMap<Transaction,Item> icons = new HashMap<>();
 
 
-        for (Transaction transaction: transactions) {
+
+        for (Transaction transaction: allTransactions) {
             if (!icons.containsValue(transaction.getItemstack().getItem())) {
                 icons.put(transaction, transaction.getItemstack().getItem());
             }
@@ -37,15 +39,24 @@ public class MarketMenu extends ChestMenu {
 
         ArrayList<Item> iconArray = new ArrayList<>(icons.values());
 
-        for (Transaction transaction: icons.keySet()) {
-            ItemStack icona = new ItemStack(icons.get(transaction));
+        // second page: 36 * 1 = 36, starts from 36. transaction
+        if (iconArray.size() < 36 * (page - 1)) {
+            return false;
+        }
+
+        List<Item> pagedIconArray = iconArray.subList(36 * (page - 1), Math.min(iconArray.size(), 36 * page));
+
+
+        for (Item icon: pagedIconArray) {
+            ItemStack icona = new ItemStack(icon);
 
             icona.setHoverName(Component.literal("Click to view Bids and Asks").withStyle(ChatFormatting.UNDERLINE).withStyle(ChatFormatting.AQUA));
             icona.getOrCreateTag().put("ccash.gui", StringTag.valueOf("true"));
 
-            container.setItem(10 + (iconArray.indexOf(icons.get(transaction)) == 7 ? 8 : iconArray.indexOf(icons.get(transaction))), icona);
+            container.setItem(9 + pagedIconArray.indexOf(icon), icona);
         }
 
+        return true;
     }
 
     private void decor() {

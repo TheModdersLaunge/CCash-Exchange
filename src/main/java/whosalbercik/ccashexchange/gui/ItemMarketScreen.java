@@ -12,9 +12,11 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.AirItem;
+import net.minecraftforge.registries.ForgeRegistries;
 import whosalbercik.ccashexchange.core.ModPacketHandler;
 import whosalbercik.ccashexchange.networking.AskAcceptCs2Packet;
 import whosalbercik.ccashexchange.networking.BidAcceptC2SPacket;
+import whosalbercik.ccashexchange.networking.OpenItemMarketC2SPacket;
 
 public class ItemMarketScreen extends AbstractContainerScreen<ItemMarketMenu> implements MenuAccess<ItemMarketMenu> {
 
@@ -52,6 +54,20 @@ public class ItemMarketScreen extends AbstractContainerScreen<ItemMarketMenu> im
     @Override
     protected void slotClicked(Slot slot, int index, int partialTick, ClickType clickType) {
         if (slot == null || slot.getItem().getItem() instanceof AirItem || !slot.getItem().getOrCreateTag().contains("ccash.gui")) return;
+
+        // change page
+        if (slot.getItem().getOrCreateTag().contains("ccash.pageup")) {
+            slot.getItem().getOrCreateTag().put("ccash.page", IntTag.valueOf(slot.getItem().getOrCreateTag().getInt("ccash.page") + 1));
+
+            ModPacketHandler.sendToServer(new OpenItemMarketC2SPacket(ForgeRegistries.ITEMS.getValue(new ResourceLocation(slot.getItem().getOrCreateTag().getString("ccash.item"))), slot.getItem().getOrCreateTag().getInt("ccash.page")));
+            return;
+
+        } else if (slot.getItem().getOrCreateTag().contains("ccash.pagedown")) {
+            slot.getItem().getOrCreateTag().put("ccash.page", IntTag.valueOf(slot.getItem().getOrCreateTag().getInt("ccash.page") == 1 ? 1 : slot.getItem().getOrCreateTag().getInt("ccash.page") - 1));
+
+            ModPacketHandler.sendToServer(new OpenItemMarketC2SPacket(ForgeRegistries.ITEMS.getValue(new ResourceLocation(slot.getItem().getOrCreateTag().getString("ccash.item"))), slot.getItem().getOrCreateTag().getInt("ccash.page")));
+            return;
+        }
 
         if (slot.getItem().getTag().getString("ccash.type").equals("bid")) {
             ModPacketHandler.sendToServer(new BidAcceptC2SPacket(((IntTag) slot.getItem().getTag().get("ccash.id")).getAsInt()));

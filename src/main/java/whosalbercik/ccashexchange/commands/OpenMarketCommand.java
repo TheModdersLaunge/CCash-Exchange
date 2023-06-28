@@ -1,6 +1,7 @@
 package whosalbercik.ccashexchange.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.ChatFormatting;
@@ -20,13 +21,16 @@ import java.util.ArrayList;
 public class OpenMarketCommand {
     public static void register(CommandDispatcher<CommandSourceStack> stack) {
         stack.register(Commands.literal("market")
-                        .then(Commands.argument("password", StringArgumentType.word())
-                                .executes(OpenMarketCommand::market)));
+                        .then(Commands.argument("page", IntegerArgumentType.integer(1))
+                                .then(Commands.argument("password", StringArgumentType.word())
+                                        .executes(OpenMarketCommand::market))));
+
     }
 
     private static int market(CommandContext<CommandSourceStack> ctx) {
         ServerPlayer p = ctx.getSource().getPlayer();
 
+        // temporarily holds the password in the players saved data, removes this when used
         p.getPersistentData().put("ccash.holdPass", StringTag.valueOf(ctx.getArgument("password", String.class)));
 
         assert p != null;
@@ -40,7 +44,10 @@ public class OpenMarketCommand {
             return 0;
         }
 
-        menu.putTransactions(transactions);
+        if (!menu.putTransactions(transactions, ctx.getArgument("page", int.class))) {
+            ctx.getSource().sendFailure(Component.literal("No transactions found on this page!"));
+            return 0;
+        }
 
         MenuConstructor constructor = (par1, par2, par3) -> menu;
         p.openMenu(new SimpleMenuProvider(constructor, Component.literal("Market")));

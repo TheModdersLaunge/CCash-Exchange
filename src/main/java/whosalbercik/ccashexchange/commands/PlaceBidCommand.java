@@ -48,11 +48,6 @@ public class PlaceBidCommand {
 
         }
 
-        if (ctx.getArgument("count", int.class) > stack.getMaxStackSize()) {
-            ctx.getSource().sendFailure(Component.literal("Count of item is above max stack size!"));
-            return 0;
-        }
-
         if (account.equals("")) {
             ctx.getSource().sendFailure(Component.literal("Account not set up! Please use ").append("/config account").withStyle(ChatFormatting.AQUA).append("to register").withStyle(ChatFormatting.RED));
             return 0;
