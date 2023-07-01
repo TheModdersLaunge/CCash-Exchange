@@ -9,9 +9,9 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.UUID;
 
-public class Bid extends Transaction{
+public class BidTransaction extends Transaction{
 
-    public Bid(UUID creator, ItemStack stack, long price) {
+    public BidTransaction(UUID creator, ItemStack stack, long price) {
         super(creator, stack, price);
 
         itemstack.getOrCreateTag().put("ccash.id", IntTag.valueOf(id));
@@ -22,7 +22,7 @@ public class Bid extends Transaction{
         itemstack.setHoverName(Component.literal("[BID] $" + String.valueOf(price)).withStyle(ChatFormatting.BLUE));
     }
 
-    public Bid(UUID creator,ItemStack stack, long price, int id) {
+    public BidTransaction(UUID creator, ItemStack stack, long price, int id) {
         super(id, creator, stack, price);
 
         itemstack.getOrCreateTag().put("ccash.id", IntTag.valueOf(id));

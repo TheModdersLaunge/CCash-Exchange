@@ -14,7 +14,22 @@ public final class CCashApi{
     public static final String SERVER = ServerConfig.SERVER_ADDRESS.get();
     private static final HttpClient client = HttpClient.newHttpClient();
 
+    public static boolean isOnline() {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(SERVER + "api/properties"))
+                .header("Accept", "application/json")
+                .GET()
+                .build();
 
+        try {
+            java.net.http.HttpResponse<String> response = client.send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
+
+            return response.statusCode() == 200;
+
+        } catch (Exception e) {
+            return false;
+        }
+    }
     public static Optional<Long> getBalance(String name) {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(SERVER + "api/v1/user/balance?name=" + name))
@@ -86,6 +101,10 @@ public final class CCashApi{
 
     public static boolean addUser(String name, String pass) {
 
+        if (containsAccount(name)) {
+            return false;
+        }
+
         String json = String.format("{\"name\":\"%s\", \"pass\":\"%s\"}", name, pass);
 
         HttpRequest request = HttpRequest.newBuilder()
@@ -104,6 +123,24 @@ public final class CCashApi{
         }
 
 
+    }
+
+    public static boolean verifyPassword(String username, String password) {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(SERVER + "api/v1/user/verify_password"))
+                .header("Accept", "application/json")
+                .header("Authorization", getBasicAuthenticationHeader(username, password))
+                .POST(HttpRequest.BodyPublishers.noBody())
+                .build();
+
+        try {
+            java.net.http.HttpResponse<String> response = client.send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
+
+            return response.statusCode() == 204;
+
+        } catch (Exception e) {
+            return false;
+        }
     }
 
 

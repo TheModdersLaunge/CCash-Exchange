@@ -9,9 +9,9 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.UUID;
 
-public class Ask extends Transaction{
+public class AskTransaction extends Transaction{
 
-    public Ask(UUID creator, ItemStack stack, long price) {
+    public AskTransaction(UUID creator, ItemStack stack, long price) {
         super(creator, stack, price);
 
         itemstack.getOrCreateTag().put("ccash.id", IntTag.valueOf(id));
@@ -21,7 +21,7 @@ public class Ask extends Transaction{
         itemstack.setHoverName(Component.literal("[ASK] $" + String.valueOf(price)).withStyle(ChatFormatting.BLUE));
     }
 
-    public Ask(UUID creator,ItemStack stack, long price, int id) {
+    public AskTransaction(UUID creator, ItemStack stack, long price, int id) {
         super(id, creator, stack, price);
 
         itemstack.getOrCreateTag().put("ccash.id", IntTag.valueOf(id));

@@ -6,11 +6,12 @@ import net.minecraft.world.level.Level;
 
 import java.util.UUID;
 
-public class Transaction {
+public abstract class Transaction {
     protected final int id;
     protected final UUID creator;
     protected final ItemStack itemstack;
     protected final long price;
+
 
     public Transaction(int id, UUID creator, ItemStack itemstack, long price) {
         this.id = id;
@@ -39,7 +40,7 @@ public class Transaction {
     }
 
     public Player getCreator(Level level) {
-        return level.getPlayerByUUID(creator);
+        return level.getServer().getPlayerList().getPlayer(creator);
     }
 
 

@@ -17,7 +17,7 @@ public class CCashExchange {
     // Define mod id
     public static final String MODID = "ccashexchange";
     // reference a slf4j logger
-    private static final Logger LOGGER = LogUtils.getLogger();
+    public static final Logger LOGGER = LogUtils.getLogger();
 
     public CCashExchange() {
 

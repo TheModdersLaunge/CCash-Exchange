@@ -12,11 +12,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.registries.ForgeRegistries;
 import whosalbercik.ccashexchange.core.ModMenus;
-import whosalbercik.ccashexchange.object.Bid;
+import whosalbercik.ccashexchange.object.BidTransaction;
 import whosalbercik.ccashexchange.object.Transaction;
 
 import java.util.ArrayList;
-import java.util.List;
+        import java.util.List;
 
 public class ItemMarketMenu extends ChestMenu {
 
@@ -79,18 +79,26 @@ public class ItemMarketMenu extends ChestMenu {
 
 
         for (Transaction transaction: pagedTransactions) {
+
             ItemStack icona = new ItemStack(transaction.getItemstack().getItem());
-            icona.setHoverName(Component.literal((String.format("[%s] %sx for $%s", transaction instanceof Bid ? "BID" : "ASK", transaction.getItemstack().getCount(), transaction.getPrice()))).withStyle(ChatFormatting.UNDERLINE).withStyle(ChatFormatting.GREEN));
+            icona.setHoverName(Component.literal((String.format("[%s] %sx for $%s (total $%s)",
+                    transaction instanceof BidTransaction ? "BID" : "ASK",
+                    transaction.getItemstack().getCount(),
+                    transaction.getPrice(),
+                    transaction.getPrice() * transaction.getItemstack().getCount())))
+                    .withStyle(ChatFormatting.UNDERLINE).withStyle(ChatFormatting.GREEN));
+
             icona.getOrCreateTag().put("ccash.gui", StringTag.valueOf("true"));
             icona.getTag().put("ccash.id", IntTag.valueOf(transaction.getId()));
-            icona.getTag().put("ccash.type", StringTag.valueOf(transaction instanceof Bid ? "bid" : "ask"));
+            icona.getTag().put("ccash.type", StringTag.valueOf(transaction instanceof BidTransaction ? "bid" : "ask"));
+
+
 
             container.setItem(9 + pagedTransactions.indexOf(transaction), icona.copy());
         }
 
         return true;
     }
-
 
 
 

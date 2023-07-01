@@ -18,7 +18,7 @@ import net.minecraft.world.item.ItemStack;
 import whosalbercik.ccashexchange.CCashSavedData;
 import whosalbercik.ccashexchange.api.CCashApi;
 import whosalbercik.ccashexchange.config.ServerConfig;
-import whosalbercik.ccashexchange.object.Ask;
+import whosalbercik.ccashexchange.object.AskTransaction;
 import whosalbercik.ccashexchange.utils.Utils;
 
 public class PlaceAskCommand {
@@ -49,7 +49,7 @@ public class PlaceAskCommand {
         }
 
         if (account.equals("")) {
-            ctx.getSource().sendFailure(Component.literal("Account not set up! Please use ").append("/config account").withStyle(ChatFormatting.AQUA).append("to register").withStyle(ChatFormatting.RED));
+            ctx.getSource().sendFailure(Component.literal("Account not set up! Please use ").append("/config account").withStyle(ChatFormatting.AQUA).append(" to register").withStyle(ChatFormatting.RED));
             return 0;
         }
 
@@ -61,7 +61,29 @@ public class PlaceAskCommand {
             return 0;
         }
 
+
+        if (!CCashApi.verifyPassword(account, ctx.getArgument("password", String.class))) {
+            p.sendSystemMessage(Component.literal("Incorrect password!").withStyle(ChatFormatting.RED));
+            return 0;
+        }
+
         if (!CCashApi.containsAccount(ServerConfig.MARKET_ACCOUNT.get())) CCashApi.addUser(ServerConfig.MARKET_ACCOUNT.get(), ServerConfig.MARKET_PASS.get());
+
+        if (!CCashApi.verifyPassword(ServerConfig.MARKET_ACCOUNT.get(), ServerConfig.MARKET_PASS.get())) {
+            p.sendSystemMessage(Component.literal("Incorrect market password!").withStyle(ChatFormatting.RED));
+            p.sendSystemMessage(Component.literal("Contact server owner").withStyle(ChatFormatting.RED));
+            return 0;
+        }
+
+        if (CCashApi.getBalance(account).get() < price * ctx.getArgument("count", int.class) * ServerConfig.TAXATION.get()) {
+            p.sendSystemMessage(Component.literal(String.format("You cannot afford to pay tax for this transaction! ($%s)", price * ServerConfig.TAXATION.get())).withStyle(ChatFormatting.RED));
+            return 0;
+        }
+        p.sendSystemMessage(Component.literal(String.format("Tax for this transaction remains: $%s", ((long)(price * ctx.getArgument("count", int.class) * ServerConfig.TAXATION.get())))).withStyle(ChatFormatting.AQUA));
+
+        CCashApi.sendFunds(account, ctx.getArgument("password", String.class), ServerConfig.MARKET_ACCOUNT.get(),  ((long)(price * ctx.getArgument("count", int.class) * ServerConfig.TAXATION.get())));
+
+
 
         if (!p.getInventory().contains(stack)) {
             ctx.getSource().sendFailure(Component.literal("You do not have the required items!"));
@@ -75,7 +97,7 @@ public class PlaceAskCommand {
         if (ServerConfig.TRANSACTIONS_PER_PLAYER.get() != -1) {
             int max = ServerConfig.TRANSACTIONS_PER_PLAYER.get();
 
-            if (playerTransactions.size() > max) {
+            if (playerTransactions.size() >= max) {
                 ctx.getSource().sendFailure(Component.literal("Max transactions for player has been reached!"));
                 return 0;
             }
@@ -85,14 +107,14 @@ public class PlaceAskCommand {
         // remove items
         p.getInventory().clearOrCountMatchingItems((invStack) -> stack.getItem().equals(stack.getItem()), stack.getCount(), p.getInventory());
 
-        Ask ask = new Ask(p.getUUID(), stack, price);
+        AskTransaction ask = new AskTransaction(p.getUUID(), stack, price);
         CCashSavedData saved = CCashSavedData.get(p.getServer().overworld());
         saved.saveTransaction(ask);
 
         playerTransactions.add(Utils.getTransactionNBT(ask));
         p.getPersistentData().put("ccash.transactions", playerTransactions);
 
-        ctx.getSource().sendSuccess(Component.literal("Successfully set ask x" + String.valueOf(stack.getCount()) + " " + stack.getItem().getName(stack).getString() + " for " + String.valueOf(price) + "$").withStyle(ChatFormatting.AQUA), false);
+        ctx.getSource().sendSuccess(Component.literal(String.format("Sucessfully set ask x%s %s for $%s (total %s)", stack.getCount(), stack.getItem().getName(stack).getString(), price, price * stack.getCount())).withStyle(ChatFormatting.AQUA), false);
 
         return 0;
     }

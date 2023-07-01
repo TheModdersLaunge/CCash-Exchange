@@ -32,7 +32,7 @@ public class TransferCommand {
         String account = p.getPersistentData().getString("ccash.account");
 
         if (account.equals("")) {
-            p.sendSystemMessage(Component.literal("Account not set up! Please use ").append("/config account").withStyle(ChatFormatting.AQUA).append("to register").withStyle(ChatFormatting.RED));
+            p.sendSystemMessage(Component.literal("Account not set up! Please use ").append("/config account").withStyle(ChatFormatting.AQUA).append(" to register").withStyle(ChatFormatting.RED));
             return 0;
         }
 

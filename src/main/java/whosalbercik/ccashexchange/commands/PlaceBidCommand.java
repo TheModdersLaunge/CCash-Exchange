@@ -18,7 +18,7 @@ import net.minecraft.world.item.ItemStack;
 import whosalbercik.ccashexchange.CCashSavedData;
 import whosalbercik.ccashexchange.api.CCashApi;
 import whosalbercik.ccashexchange.config.ServerConfig;
-import whosalbercik.ccashexchange.object.Bid;
+import whosalbercik.ccashexchange.object.BidTransaction;
 import whosalbercik.ccashexchange.utils.Utils;
 
 public class PlaceBidCommand {
@@ -49,7 +49,7 @@ public class PlaceBidCommand {
         }
 
         if (account.equals("")) {
-            ctx.getSource().sendFailure(Component.literal("Account not set up! Please use ").append("/config account").withStyle(ChatFormatting.AQUA).append("to register").withStyle(ChatFormatting.RED));
+            ctx.getSource().sendFailure(Component.literal("Account not set up! Please use ").append("/config account").withStyle(ChatFormatting.AQUA).append(" to register").withStyle(ChatFormatting.RED));
             return 0;
         }
 
@@ -61,9 +61,20 @@ public class PlaceBidCommand {
             return 0;
         }
 
+        if (!CCashApi.verifyPassword(account, ctx.getArgument("password", String.class))) {
+            p.sendSystemMessage(Component.literal("Incorrect password!").withStyle(ChatFormatting.RED));
+            return 0;
+        }
+
         if (!CCashApi.containsAccount(ServerConfig.MARKET_ACCOUNT.get())) CCashApi.addUser(ServerConfig.MARKET_ACCOUNT.get(), ServerConfig.MARKET_PASS.get());
 
-        if (CCashApi.getBalance(account).get() < price) {
+        if (!CCashApi.verifyPassword(ServerConfig.MARKET_ACCOUNT.get(), ServerConfig.MARKET_PASS.get())) {
+            p.sendSystemMessage(Component.literal("Incorrect market password!").withStyle(ChatFormatting.RED));
+            p.sendSystemMessage(Component.literal("Contact server owner").withStyle(ChatFormatting.RED));
+            return 0;
+        }
+
+        if (CCashApi.getBalance(account).get() < price * ctx.getArgument("count", int.class)) {
             ctx.getSource().sendFailure(Component.literal("You do not have enough money to place this bid"));
             return 0;
         }
@@ -86,14 +97,15 @@ public class PlaceBidCommand {
 
 
 
-        Bid bid = new Bid(p.getUUID(), stack, price);
+        BidTransaction bid = new BidTransaction(p.getUUID(), stack, price);
         CCashSavedData saved = CCashSavedData.get(p.getServer().overworld());
         saved.saveTransaction(bid);
 
         playerTransactions.add(Utils.getTransactionNBT(bid));
         p.getPersistentData().put("ccash.transactions", playerTransactions);
 
-        ctx.getSource().sendSuccess(Component.literal("Successfully set bid x" + String.valueOf(stack.getCount()) + " " + stack.getItem().getName(stack).getString() + " for " + String.valueOf(price) + "$").withStyle(ChatFormatting.AQUA), false);
+
+        ctx.getSource().sendSuccess(Component.literal(String.format("Sucessfully set bid x%s %s for $%s (total %s)", stack.getCount(), stack.getItem().getName(stack).getString(), price, price * stack.getCount())).withStyle(ChatFormatting.AQUA), false);
 
 
         return 0;

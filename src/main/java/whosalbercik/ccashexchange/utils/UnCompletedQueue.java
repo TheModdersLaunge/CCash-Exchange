@@ -1,4 +1,4 @@
-package whosalbercik.ccashexchange;
+package whosalbercik.ccashexchange.utils;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -13,52 +13,44 @@ import net.minecraftforge.registries.ForgeRegistries;
 import whosalbercik.ccashexchange.object.AskTransaction;
 import whosalbercik.ccashexchange.object.BidTransaction;
 import whosalbercik.ccashexchange.object.Transaction;
-import whosalbercik.ccashexchange.utils.Utils;
+import whosalbercik.ccashexchange.object.UnCompletedTransaction;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
-public class CCashSavedData extends SavedData {
-
-    private final HashMap<Integer, Transaction> transactions = new HashMap<Integer, Transaction>();
+public class UnCompletedQueue extends SavedData {
+    private final ArrayList<UnCompletedTransaction> transactions = new ArrayList<UnCompletedTransaction>();
 
 
-    public static CCashSavedData get(Level level) {
+    public static UnCompletedQueue get(Level level) {
         if (level.isClientSide) {
             throw new RuntimeException("Don't access this client-side!");
         }
         DimensionDataStorage storage = ((ServerLevel)level).getDataStorage();
-        return storage.computeIfAbsent(CCashSavedData::new, CCashSavedData::new, "ccash.savedData");
+        return storage.computeIfAbsent(UnCompletedQueue::new, UnCompletedQueue::new, "ccash.unCompleted");
     }
 
-    public void saveTransaction(Transaction transaction) {
-        transactions.put(transaction.getId(), transaction);
+    public void saveTransaction(UnCompletedTransaction transaction) {
+        transactions.add(transaction);
         this.setDirty();
     }
 
-    public void removeTransaction(Transaction transaction) {
-        transactions.remove(transaction.getId());
+    public void removeTransaction(UnCompletedTransaction transaction) {
+        transactions.remove(transaction);
         this.setDirty();
     }
 
-    public ArrayList<Transaction> getTransactions() {
-        ArrayList<Transaction> transactionsa = new ArrayList<>();
-        transactions.forEach((id, transaction) -> transactionsa.add(transaction));
-
-        return transactionsa;
+    public ArrayList<UnCompletedTransaction> getTransactions() {
+        return transactions;
     }
 
-    public Transaction getTransaction(int id) {
-        return transactions.get(id);
-    }
 
-    public CCashSavedData() {
+    public UnCompletedQueue() {
     }
 
 
     // adds to list
-    public CCashSavedData(CompoundTag tag) {
-        ListTag list = tag.getList("ccash.transactions", Tag.TAG_COMPOUND);
+    public UnCompletedQueue(CompoundTag tag) {
+        ListTag list = tag.getList("ccash.uncompleted", Tag.TAG_COMPOUND);
         for (Tag t : list) {
             CompoundTag transactionTag = (CompoundTag) t;
 
@@ -77,7 +69,15 @@ public class CCashSavedData extends SavedData {
                         transactionTag.getInt("ccash.id"));
             }
 
-            transactions.put(action.getId(), action);
+            UnCompletedTransaction unCompletedTransaction;
+
+           if (transactionTag.getString("ccash.unCompletionType") == "item") {
+               unCompletedTransaction = new UnCompletedTransaction(action, ForgeRegistries.ITEMS.getValue(new ResourceLocation(transactionTag.getString("ccash.item"))).getDefaultInstance());
+           } else {
+               unCompletedTransaction = new UnCompletedTransaction(action, transactionTag.getLong("ccash.price"));
+           }
+
+            transactions.add(unCompletedTransaction);
         }
     }
 
@@ -86,11 +86,15 @@ public class CCashSavedData extends SavedData {
     @Override
     public CompoundTag save(CompoundTag tag) {
         ListTag list = new ListTag();
-        transactions.forEach((id, transaction) -> {
-            list.add(Utils.getTransactionNBT(transaction));
+        transactions.forEach((unCompleted) -> {
+            CompoundTag unCompletedTag = Utils.getTransactionNBT(unCompleted.getTransaction());
+            unCompletedTag.putString("ccash.unCompletionType", unCompleted.getType() == UnCompletedTransaction.UnCompletionType.ITEM ? "item" : "money");
+
+            list.add(unCompletedTag);
         });
-        tag.put("ccash.transactions", list);
+        tag.put("ccash.uncompleted", list);
         return tag;
     }
+
 
 }

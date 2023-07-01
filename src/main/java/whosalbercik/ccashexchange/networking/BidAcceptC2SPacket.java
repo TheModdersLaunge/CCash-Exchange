@@ -11,7 +11,9 @@ import net.minecraftforge.network.NetworkEvent;
 import whosalbercik.ccashexchange.CCashSavedData;
 import whosalbercik.ccashexchange.api.CCashApi;
 import whosalbercik.ccashexchange.config.ServerConfig;
-import whosalbercik.ccashexchange.object.Bid;
+import whosalbercik.ccashexchange.object.BidTransaction;
+import whosalbercik.ccashexchange.object.UnCompletedTransaction;
+import whosalbercik.ccashexchange.utils.UnCompletedQueue;
 import whosalbercik.ccashexchange.utils.Utils;
 
 import java.util.function.Supplier;
@@ -36,14 +38,10 @@ public class BidAcceptC2SPacket {
     public void handle(Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context ctx = supplier.get();
         ctx.enqueueWork(() -> {
-            Bid bid = (Bid) CCashSavedData.get(ctx.getSender().level).getTransaction(bidId);
+            BidTransaction bid = (BidTransaction) CCashSavedData.get(ctx.getSender().level).getTransaction(bidId);
             ServerPlayer p = ctx.getSender();
             Player author = bid.getCreator(ctx.getSender().level);
 
-            if (author == null) {
-                p.sendSystemMessage(Component.literal("Author is not online, please wait until player joins").withStyle(ChatFormatting.RED));
-                return;
-            }
 
             if (!p.getInventory().contains(bid.getItemstack())) {
                 p.sendSystemMessage(Component.literal("You do not have the required items!").withStyle(ChatFormatting.RED));
@@ -80,30 +78,43 @@ public class BidAcceptC2SPacket {
             p.getInventory().clearOrCountMatchingItems((stack) -> stack.getItem().equals(bid.getItemstack().getItem()), bid.getItemstack().getCount(), p.getInventory());
 
             // give money to accepter
-            CCashApi.sendFunds(ServerConfig.MARKET_ACCOUNT.get(), ServerConfig.MARKET_PASS.get(), account, bid.getPrice());
+            CCashApi.sendFunds(ServerConfig.MARKET_ACCOUNT.get(), ServerConfig.MARKET_PASS.get(), account, bid.getPrice() * bid.getItemstack().getCount());
 
             p.closeContainer();
             p.sendSystemMessage(Component.literal("Successfully accepted Bid!").withStyle(ChatFormatting.GREEN));
 
-            // give items to author
-            author.sendSystemMessage(Component.literal("Your bid for ").withStyle(ChatFormatting.GREEN)
-                    .append(String.format("x%s %s", bid.getItemstack().getCount(), bid.getItemstack().getItem().getName(bid.getItemstack()).getString())).withStyle(ChatFormatting.AQUA)
-                    .append(" Has been accepted!").withStyle(ChatFormatting.GREEN));
 
 
+            if (author == null) {
+                UnCompletedQueue.get(p.getServer().overworld()).saveTransaction(new UnCompletedTransaction(bid, new ItemStack(bid.getItemstack().getItem(), bid.getItemstack().getCount())));
+            }
             // give items to author
-            if (p.getInventory().getFreeSlot() == -1 && author.getInventory().getSlotWithRemainingSpace(bid.getItemstack()) == -1) {
-                p.drop(new ItemStack(bid.getItemstack().getItem(), bid.getItemstack().getCount()), false);
-                return;
+            else if (author.getInventory().getFreeSlot() == -1 && author.getInventory().getSlotWithRemainingSpace(bid.getItemstack()) == -1) {
+
+                author.sendSystemMessage(Component.literal("Your bid for ").withStyle(ChatFormatting.GREEN)
+                        .append(String.format("x%s %s", bid.getItemstack().getCount(), bid.getItemstack().getItem().getName(bid.getItemstack()).getString())).withStyle(ChatFormatting.AQUA)
+                        .append(" Has been accepted!").withStyle(ChatFormatting.GREEN));
+
+                author.drop(new ItemStack(bid.getItemstack().getItem(), bid.getItemstack().getCount()), false);
+
+                ListTag tag = author.getPersistentData().getList("ccash.transactions", 10);
+                tag.remove(Utils.getTransactionNBT(bid));
+                author.getPersistentData().put("ccash.transactions", tag);
+
             }
             else {
-                p.getInventory().add(new ItemStack(bid.getItemstack().getItem(), bid.getItemstack().getCount()));
+                author.sendSystemMessage(Component.literal("Your bid for ").withStyle(ChatFormatting.GREEN)
+                        .append(String.format("x%s %s", bid.getItemstack().getCount(), bid.getItemstack().getItem().getName(bid.getItemstack()).getString())).withStyle(ChatFormatting.AQUA)
+                        .append(" Has been accepted!").withStyle(ChatFormatting.GREEN));
+
+                author.getInventory().add(new ItemStack(bid.getItemstack().getItem(), bid.getItemstack().getCount()));
+
+                ListTag tag = author.getPersistentData().getList("ccash.transactions", 10);
+                tag.remove(Utils.getTransactionNBT(bid));
+                author.getPersistentData().put("ccash.transactions", tag);
             }
 
 
-            ListTag tag = author.getPersistentData().getList("ccash.transactions", 10);
-            tag.remove(Utils.getTransactionNBT(bid));
-            p.getPersistentData().put("ccash.transactions", tag);
 
             CCashSavedData.get(ctx.getSender().level).removeTransaction(bid);
 
