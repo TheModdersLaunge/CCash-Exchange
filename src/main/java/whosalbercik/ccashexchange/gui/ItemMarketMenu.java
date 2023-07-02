@@ -11,12 +11,13 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.apache.commons.lang3.ArrayUtils;
 import whosalbercik.ccashexchange.core.ModMenus;
+import whosalbercik.ccashexchange.object.AskTransaction;
 import whosalbercik.ccashexchange.object.BidTransaction;
 import whosalbercik.ccashexchange.object.Transaction;
 
-import java.util.ArrayList;
-        import java.util.List;
+import java.util.*;
 
 public class ItemMarketMenu extends ChestMenu {
 
@@ -75,8 +76,10 @@ public class ItemMarketMenu extends ChestMenu {
         }
 
         // transactions that should be on the specified page
-        List<Transaction> pagedTransactions = correctTransactions.subList(36 * (page - 1), Math.min(correctTransactions.size(), 36 * page));
 
+        ArrayList<Transaction> sorted = sort(correctTransactions);
+
+        List<Transaction> pagedTransactions = sorted.subList(36 * (page - 1), Math.min(correctTransactions.size(), 36 * page));
 
         for (Transaction transaction: pagedTransactions) {
 
@@ -100,7 +103,49 @@ public class ItemMarketMenu extends ChestMenu {
         return true;
     }
 
+    private ArrayList<Transaction> sort(List<Transaction> transactions) {
+        ArrayList<BidTransaction> bids = new ArrayList<BidTransaction>();
+        ArrayList<AskTransaction> asks = new ArrayList<AskTransaction>();
 
+        // get bids
+        for (Transaction transaction: transactions) {
+            if (transaction instanceof BidTransaction) bids.add((BidTransaction) transaction);
+            else asks.add((AskTransaction) transaction);
+        }
+
+        BidTransaction[] bidArray = bids.toArray(BidTransaction[]::new);
+
+        Arrays.sort(bidArray);
+
+        AskTransaction[] askArray = asks.toArray(AskTransaction[]::new);
+
+        Arrays.sort(askArray);
+
+        ArrayList<Transaction> all = new ArrayList<Transaction>();
+
+
+        // mixing
+        if (bids.size() < asks.size()) {
+            for (BidTransaction bid: bidArray) {
+                all.add(bid);
+                all.add(askArray[ArrayUtils.indexOf(bidArray, bid)]);
+
+                askArray = ArrayUtils.remove(askArray, ArrayUtils.indexOf(bidArray, bid));
+                bidArray = ArrayUtils.removeElement(bidArray, bid);
+            }
+            all.addAll(List.of(askArray));
+        } else {
+            for (AskTransaction ask: askArray) {
+                all.add(ask);
+                all.add(bidArray[ArrayUtils.indexOf(askArray, ask)]);
+
+                bidArray = ArrayUtils.remove(bidArray, ArrayUtils.indexOf(askArray, ask));
+                askArray = ArrayUtils.removeElement(askArray, ask);
+            }
+            all.addAll(List.of(bidArray));
+        }
+        return all;
+      }
 
     private void decor() {
         SimpleContainer container = (SimpleContainer) this.getContainer();

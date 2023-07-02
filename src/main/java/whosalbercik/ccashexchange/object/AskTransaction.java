@@ -6,6 +6,7 @@ import net.minecraft.nbt.LongTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
@@ -18,7 +19,7 @@ public class AskTransaction extends Transaction{
         itemstack.getOrCreateTag().put("ccash.creator", StringTag.valueOf(creator.toString()));
         itemstack.getOrCreateTag().put("ccash.price", LongTag.valueOf(price));
         itemstack.getOrCreateTag().put("ccash.type", StringTag.valueOf("ask"));
-        itemstack.setHoverName(Component.literal("[ASK] $" + String.valueOf(price)).withStyle(ChatFormatting.BLUE));
+        itemstack.setHoverName(Component.literal("[ASK] $" + price).withStyle(ChatFormatting.BLUE));
     }
 
     public AskTransaction(UUID creator, ItemStack stack, long price, int id) {
@@ -27,7 +28,11 @@ public class AskTransaction extends Transaction{
         itemstack.getOrCreateTag().put("ccash.id", IntTag.valueOf(id));
         itemstack.getOrCreateTag().put("ccash.creator", StringTag.valueOf(creator.toString()));
         itemstack.getOrCreateTag().put("ccash.price", LongTag.valueOf(price));
-        itemstack.setHoverName(Component.literal("[BID] $" + String.valueOf(price)).withStyle(ChatFormatting.BLUE));
+        itemstack.setHoverName(Component.literal("[BID] $" + price).withStyle(ChatFormatting.BLUE));
     }
 
+    @Override
+    public int compareTo(@NotNull Transaction o) {
+        return Long.compare(this.getPrice(), o.getPrice());
+    }
 }

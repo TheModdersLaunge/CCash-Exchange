@@ -6,7 +6,7 @@ import net.minecraft.world.level.Level;
 
 import java.util.UUID;
 
-public abstract class Transaction {
+public abstract class Transaction implements Comparable<Transaction>{
     protected final int id;
     protected final UUID creator;
     protected final ItemStack itemstack;
