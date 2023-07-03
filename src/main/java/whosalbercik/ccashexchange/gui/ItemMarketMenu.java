@@ -71,7 +71,7 @@ public class ItemMarketMenu extends ChestMenu {
         transactions.forEach((transaction) -> {if (transaction.getItemstack().getItem().equals(item))  correctTransactions.add(transaction);});
 
         // no transactions in this page
-        if (correctTransactions.size() <= 36 * (page - 1)) {
+        if (correctTransactions.size() <= 28 * (page - 1)) {
             return false;
         }
 
@@ -79,10 +79,27 @@ public class ItemMarketMenu extends ChestMenu {
 
         ArrayList<Transaction> sorted = sort(correctTransactions);
 
-        List<Transaction> pagedTransactions = sorted.subList(36 * (page - 1), Math.min(correctTransactions.size(), 36 * page));
+        List<Transaction> pagedTransactions = sorted.subList(28 * (page - 1), Math.min(correctTransactions.size(), 28 * page));
+
+        pagedTransactions.add(0, null);
+        pagedTransactions.add(Math.min(8, pagedTransactions.size()), null);
+        pagedTransactions.add((Math.min(9, pagedTransactions.size())), null);
+        pagedTransactions.add((Math.min(17, pagedTransactions.size())), null);
+        pagedTransactions.add((Math.min(18, pagedTransactions.size())), null);
+        pagedTransactions.add((Math.min(26, pagedTransactions.size())), null);
+        pagedTransactions.add((Math.min(27, pagedTransactions.size())), null);
+        pagedTransactions.add((Math.min(35, pagedTransactions.size())), null);
+        pagedTransactions.add((Math.min(36, pagedTransactions.size())), null);
+        pagedTransactions.add((Math.min(53, pagedTransactions.size())), null);
+
 
         for (Transaction transaction: pagedTransactions) {
-
+            
+            if (transaction == null) {
+                container.setItem(9 + pagedTransactions.indexOf(transaction), new ItemStack(Items.AIR));
+                continue;
+            }
+            
             ItemStack icona = new ItemStack(transaction.getItemstack().getItem());
             icona.setHoverName(Component.literal((String.format("[%s] %sx for $%s (total $%s)",
                     transaction instanceof BidTransaction ? "BID" : "ASK",

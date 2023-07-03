@@ -39,6 +39,18 @@ public class MarketMenu extends ChestMenu {
 
         ArrayList<Item> iconArray = new ArrayList<>(icons.values());
 
+        iconArray.add(0, Items.AIR);
+        iconArray.add(Math.min(8, iconArray.size()), Items.AIR);
+        iconArray.add((Math.min(9, iconArray.size())), Items.AIR);
+        iconArray.add((Math.min(17, iconArray.size())), Items.AIR);
+        iconArray.add((Math.min(18, iconArray.size())), Items.AIR);
+        iconArray.add((Math.min(26, iconArray.size())), Items.AIR);
+        iconArray.add((Math.min(27, iconArray.size())), Items.AIR);
+        iconArray.add((Math.min(35, iconArray.size())), Items.AIR);
+        iconArray.add((Math.min(36, iconArray.size())), Items.AIR);
+        iconArray.add((Math.min(53, iconArray.size())), Items.AIR);
+
+
         // second page: 36 * 1 = 36, starts from 36. transaction
         if (iconArray.size() < 36 * (page - 1)) {
             return false;
@@ -50,8 +62,10 @@ public class MarketMenu extends ChestMenu {
         for (Item icon: pagedIconArray) {
             ItemStack icona = new ItemStack(icon);
 
+
             icona.setHoverName(Component.literal("Click to view Bids and Asks").withStyle(ChatFormatting.UNDERLINE).withStyle(ChatFormatting.AQUA));
             icona.getOrCreateTag().put("ccash.gui", StringTag.valueOf("true"));
+
 
             container.setItem(9 + pagedIconArray.indexOf(icon), icona);
         }
